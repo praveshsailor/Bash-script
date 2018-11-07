@@ -257,8 +257,7 @@ echo -e  net.ipv6.conf.default.accept_redirects=0		 >> /etc/sysctl.conf
 echo -e  net.ipv4.route.flush=1		 >> /etc/sysctl.conf
 echo -e # disable IPv6 for all network interfaces >> /etc/sysctl.conf
 echo -e  net.ipv6.conf.all.disable_ipv6=1			 >> /etc/sysctl.conf
-echo -e #NAPIER rules >> /etc/sysctl.conf
-echo -e net.ipv4.conf.all.accept_redirects=0 	>> /etc/sysctl.conf
+cho -e net.ipv4.conf.all.accept_redirects=0 	>> /etc/sysctl.conf
 echo -e	net.ipv4.conf.default.accept_redirects=0	>> /etc/sysctl.conf
 echo -e	net.ipv4.conf.all.secure_redirects=0		>> /etc/sysctl.conf
 echo -e	net.ipv4.conf.default.secure_redirects=0	>> /etc/sysctl.conf
