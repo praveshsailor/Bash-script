@@ -1,6 +1,5 @@
 ###
-###https://highon.coffee/blog/security-harden-centos-7/#disable-ssh-root-login
-###
+##
 SSHCONF=/etc/ssh/sshd_config
 WHEELSU=/etc/pam.d/su
 #############################
