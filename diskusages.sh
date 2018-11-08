@@ -8,14 +8,14 @@ echo "*                FILESYSTEM UTILIZATION                 *" >> /tmp/mail_in
 echo "*********************************************************" >> /tmp/mail_input
 echo "" >> /tmp/mail_input
 ##########################################################################
-for i in `cat /root/disk49226.txt | grep -v '#'`  ### Server IP address file location
+for i in `cat /root/serverip.txt | grep -v '#'`  ### Server IP address file location
 do
   for port in 22 2222 # Enter the All ssh ports
   do
     # if [ $(nc 2>/dev/null -vz $i $port; echo $?) -eq 0 ] ; then
         if echo 2>/dev/null > /dev/tcp/"$i"/"$port" ; then   #Checking for server assostied ssh port
 name=$($SSHCMD -p $port username@$i hostname)
-$SSHCMD -p $port username@$i df -h | grep -e [80,90][0-9]% -e 100% | grep -iv run | grep -iv Peoplestrong | awk '{print $5}' > /tmp/test_app
+$SSHCMD -p $port username@$i df -h | grep -e [80,90][0-9]% -e 100% | grep -iv run | awk '{print $5}' > /tmp/test_app
 used=`du /tmp/test_app | awk '{print $1}'`
 ###########################################################
 if [ $used -ne 0 ]
@@ -26,7 +26,7 @@ echo "HOSTNAME:$name" >> /tmp/mail_input
 echo "IP ADDRESS:$i" >> /tmp/mail_input
 echo "*************************" >> /tmp/mail_input
 echo "%USED     FILESYSTEM" >> /tmp/mail_input
-$SSHCMD -p $port username@$i df -h | grep -e [80,90][0-9]% -e 100% | grep -iv run | grep -iv Peoplestrong | awk '{print $5,"     ",$6}' >> /tmp/mail_input
+$SSHCMD -p $port username@$i df -h | grep -e [80,90][0-9]% -e 100% | grep -iv run | awk '{print $5,"     ",$6}' >> /tmp/mail_input
 echo "*************************" >> /tmp/mail_input
 echo "" >> /tmp/mail_input
 fi
