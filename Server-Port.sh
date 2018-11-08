@@ -13,7 +13,7 @@ do
 # With out password with ssh key
     /usr/bin/ssh -p $port -o StrictHostKeyChecking=no user@$server hostname
 # With password
-#    /usr/bin/sshpass -p "redhat" ssh -p 22 -o StrictHostKeyChecking=no root@$line "bash -s" < /opt/script.sh
+#    /usr/bin/sshpass -p "redhat" ssh -p 22 -o StrictHostKeyChecking=no root@$server "bash -s" < /opt/script.sh
     fi
 done
   done
