@@ -404,7 +404,7 @@ aide -i
 mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
 ############################
 mkdir -p /home/$user/.ssh/
-echo 'SSH-KEY' >  /home/issteam/.ssh/authorized_keys
+echo 'SSH-KEY' >  /home/$user/.ssh/authorized_keys
 chmod 700  /home/$user/.ssh
 chmod 400 /home/$user/.ssh/authorized_keys
 sudo chown $user:$user /home/$user/.ssh -R
