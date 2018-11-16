@@ -3,20 +3,31 @@
 SSHCONF=/etc/ssh/sshd_config
 WHEELSU=/etc/pam.d/su
 #############################
-cp $SSHCONF /root/
-FSTAB
+/usr/bin/cp /etc/fstab /root/
+/usr/bin/cp $SSHCONF /root/
+/usr/bin/cp $WHEELSU  /root/
+####################Add normal user for sudo access
+echo "***Create additional user***"
+read -p "Please enter additional usre name : " user
+egrep "^$user" /etc/passwd >/dev/null
+if [ $? -eq 0 ]; then
+  echo "$user exists!"
+else
+useradd "$user" ; usermod -G wheel "$user"
+/usr/bin/chage -m 0 -M 99999 -I -1 -E -1 "$user"
+read -s -p "Enter password : " pass
+echo "$pass" | passwd --stdin "$user"
+fi
 #############################################################
 #/etc/fstab file entry function
 ############################################################
 FSTAB () {
-cp /etc/fstab /root/
 grep  "/var/tmp" /etc/fstab
 if [ `echo $?`  != 0 ] ; then
 echo "/tmp                    /var/tmp                none    rw,noexec,nosuid,nodev,bind  0  0" >> /etc/fstab
 fi
 ###############################################################
 # Tmp=$(grep -i tmp /etc/fstab | awk '{print $1}' | cut -d/ -f4)
-#sed -i '/^AllowTcpForwarding yes/ s/^/#/g' $SSHCONF
 Tmp=$(df | grep /tmp | awk '{print $1}'| cut -d/ -f4)
 Usr=$(df | grep /usr | awk '{print $1}'| cut -d/ -f4)
 Var=$(df | grep /var | awk '{print $1}'| cut -d/ -f4)
@@ -28,30 +39,21 @@ sed -i  "/$Usr/ s/defaults/nodev/g"  /etc/fstab
 sed -i  "/$Home/ s/defaults/noexec,nosuid,nodev/g"  /etc/fstab
 #################################################################
 }
-#############################
-# AddUSER () {
-echo "***Create additional user***"
-read -p "Please enter additional usre name : " user
-egrep "^$user" /etc/passwd >/dev/null
-if [ $? -eq 0 ]; then
-  echo "$user exists!"
-#  exit 1
-else
-useradd "$user" ; usermod -G wheel "$user"
-/usr/bin/chage -m 0 -M 99999 -I -1 -E -1 "$user"
-read -s -p "Enter password : " pass
-echo "$pass" | passwd --stdin "$user"
+#It will change the fstab file if the partition created in LVM
+if [ "$(/usr/sbin/vgdisplay | grep -q lvm)" == "0"  ] ; then
+FSTAB
 fi
-# }
 #############################
+############################
 ###Add # before  nameserver #
 sed -i '/^nameserver/ s/^/#/g' /etc/resolv.conf
 sed -i '/^nameserver / s/^/#/g' /etc/resolv.conf
 ##################################################
-###Remove  nameserver #
+###Remove  Current nameservers #
 sed -i '/#nameserver/d' /etc/resolv.conf
 sed -i '/#nameserver/d' /etc/resolv.conf
 ###################################################
+### If you have any custom Nameservers Upadte here########### 
 echo -e "nameserver    8.8.8.8" >>  /etc/resolv.conf
 echo -e "nameserver    8.8.4.4"       >>  /etc/resolv.conf
 ##################################################
@@ -81,10 +83,9 @@ sed -i '/#PASS_MIN_DAYS/d' /etc/login.defs
 sed -i '/#PASS_MIN_LEN/d' /etc/login.defs
 sed -i '/#PASS_WARN_AGE/d' /etc/login.defs
 ##############SU SETTINGS########
-cp -ar $WHEELSU $WHEELSU_hard
 sed -i '/pam_wheel.so use_uid/ s/#auth/auth/g' $WHEELSU
 ##################################
-######## SSH Hardingn #########
+######## SSH Hardings #########
 sed -i '/^AllowTcpForwarding yes/ s/^/#/g' $SSHCONF
 sed -i '/#AllowTcpForwarding yes/a AllowTcpForwarding no' $SSHCONF
 sed -i '/#AllowTcpForwarding yes/d' $SSHCONF
@@ -219,13 +220,13 @@ systemctl enable crond
 systemctl enable psacct
 ##########################################################
 echo "Disable Interface Usage of IPv6"
-cp -ar /etc/sysconfig/network_bk /etc/sysconfig/network
 cp -ar /etc/sysconfig/network /etc/sysconfig/network_bk
 ##########################################################
 echo "NETWORKING_IPV6=no"  >> /etc/sysconfig/network
 echo "IPV6INIT=no" >> /etc/sysconfig/network
 ##############Disable Zeroconf Networking#########################
-##Zeroconf network typically occours when you fail to get an address via DHCP, the interface will be ##assigned a 169.254.0.0 address.
+##Zeroconf network typically occurs when you fail to get an address via DHCP, the interface will be
+##assigned a 169.254.0.0 address.
 echo "NOZEROCONF=yes" >> /etc/sysconfig/network
 ####Disable IPv6 Support Automatically Loading##
 echo "options ipv6 disable=1" >> /etc/modprobe.d/disabled.conf
@@ -256,7 +257,7 @@ echo -e  net.ipv6.conf.default.accept_redirects=0		 >> /etc/sysctl.conf
 echo -e  net.ipv4.route.flush=1		 >> /etc/sysctl.conf
 echo -e # disable IPv6 for all network interfaces >> /etc/sysctl.conf
 echo -e  net.ipv6.conf.all.disable_ipv6=1			 >> /etc/sysctl.conf
-cho -e net.ipv4.conf.all.accept_redirects=0 	>> /etc/sysctl.conf
+echo -e net.ipv4.conf.all.accept_redirects=0 	>> /etc/sysctl.conf
 echo -e	net.ipv4.conf.default.accept_redirects=0	>> /etc/sysctl.conf
 echo -e	net.ipv4.conf.all.secure_redirects=0		>> /etc/sysctl.conf
 echo -e	net.ipv4.conf.default.secure_redirects=0	>> /etc/sysctl.conf
@@ -264,7 +265,7 @@ echo -e	net.ipv4.conf.default.secure_redirects=0	>> /etc/sysctl.conf
 /bin/chmod 644 /etc/hosts.allow
 /bin/chmod 644 /etc/hosts.deny
 #############################################################
-cp /etc/modprobe.d/CIS.conf /root
+/usr/bin/cp /etc/modprobe.d/CIS.conf /root
 /usr/bin/rm -f /etc/modprobe.d/CIS.conf
 ##############################################################
 echo "install rds /bin/true" >> /etc/modprobe.d/CIS.conf
@@ -380,7 +381,7 @@ echo "WARNING : USE OF THIS SYSTEM IS RESTRICTED AND MONITORED." > /etc/issue
 /bin/chown root:root $SSHCONF
 #############################################################
 #Add the following line to the /etc/sysconfig/init file.
-echo -e #The umask influences the permissions assigned to files created by a process at run time. >> /etc/sysconfig/init
+echo -e "#The umask influences the permissions assigned to files created by a process at run time." >> /etc/sysconfig/init
 echo -e umask 027 >> /etc/sysconfig/init
 #Change the default runlevel to multi user without X:
 #cd /etc/systemd/system/
@@ -394,23 +395,24 @@ echo '30 * * * * root /usr/sbin/ntpd -q -u ntp:ntp' > /etc/cron.d/ntpd
 rm -rf /root/.ssh/authorized_keys
 mkdir -p /root/.ssh/
 ##############
-echo 'SSHKEY  ' > /root/.ssh/authorized_keys
+echo '##Enetr your SSH-KEY for access###' > /root/.ssh/authorized_keys
 ##############
 chmod 700  /root/.ssh/
 chmod 400 /root/.ssh/authorized_keys
 ###################
-aide -i
+/usr/sbin/aide -i
 #####################
 mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
 ############################
 mkdir -p /home/$user/.ssh/
-echo 'SSH-KEY' >  /home/$user/.ssh/authorized_keys
+echo '##Enetr your SSH-KEY for access###' >  /home/$user/.ssh/authorized_keys
 chmod 700  /home/$user/.ssh
 chmod 400 /home/$user/.ssh/authorized_keys
 sudo chown $user:$user /home/$user/.ssh -R
 ###############################################
 /usr/bin/cp -ar /etc/sudoers /root/
 ############################
+## Limited SUDO ACCESS FOR The user##
 grep $user /etc/sudoers
 if [ `echo $?`  != 0 ] ; then
 echo "Cmnd_Alias DELEGATING = /bin/chown, /bin/chmod, /usr/sbin/reboot, /usr/bin/sudo, /bin/sh, /bin/bash, /bin/kill, /usr/bin/rsync" >> /etc/sudoers
